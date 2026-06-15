@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bodyguard — Cyber Defense Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #050810;
+  --bg2: #0a0f1e;
+  --bg3: #0f1628;
+  --panel: #111827;
+  --panel2: #1a2236;
+  --border: rgba(99,179,237,0.12);
+  --border2: rgba(99,179,237,0.25);
+  --blue: #3b82f6;
+  --blue2: #60a5fa;
+  --cyan: #22d3ee;
+  --purple: #a78bfa;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #475569;
+  --glow: 0 0 20px rgba(59,130,246,0.3);
+  --glow2: 0 0 40px rgba(59,130,246,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+#root{min-height:100vh;}
+
+/* ANIMATIONS */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 20px rgba(59,130,246,0.3)}50%{box-shadow:0 0 40px rgba(59,130,246,0.6),0 0 80px rgba(59,130,246,0.2)}}
+@keyframes scan-line{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+@keyframes matrix-fall{0%{transform:translateY(-100%);opacity:1}100%{transform:translateY(100%);opacity:0}}
+@keyframes fade-up{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes border-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes ping{0%{transform:scale(1);opacity:1}75%,100%{transform:scale(2);opacity:0}}
+@keyframes slide-in-right{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slide-in-left{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes type-cursor{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes count-up{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+@keyframes radar-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes danger-pulse{0%,100%{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3)}50%{background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.7)}}
+@keyframes safe-pulse{0%,100%{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3)}50%{background:rgba(16,185,129,0.25);border-color:rgba(16,185,129,0.7)}}
+@keyframes grid-move{from{transform:perspective(500px) rotateX(60deg) translateY(0)}to{transform:perspective(500px) rotateX(60deg) translateY(40px)}}
+
+/* PARTICLES CANVAS */
+.particles-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+
+/* SCAN LINE */
+.scan-line{position:fixed;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.6),transparent);animation:scan-line 4s linear infinite;pointer-events:none;z-index:1;}
+
+/* NAVBAR */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(5,8,16,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all 0.3s;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:1.25rem;font-weight:800;
+  background:linear-gradient(135deg,var(--blue2),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  cursor:pointer;
+}
+.nav-logo svg{width:28px;height:28px;filter:drop-shadow(0 0 8px var(--blue));}
+.nav-links{display:flex;align-items:center;gap:0.25rem;}
+.nav-link{
+  padding:0.5rem 1rem;
+  border-radius:8px;
+  font-size:0.875rem;font-weight:500;
+  color:var(--text2);
+  cursor:pointer;
+  transition:all 0.2s;
+  border:1px solid transparent;
+  display:flex;align-items:center;gap:6px;
+}
+.nav-link:hover{color:var(--text);background:rgba(59,130,246,0.1);border-color:var(--border);}
+.nav-link.active{color:var(--blue2);background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);}
+.nav-link .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:ping 1.5s infinite;}
+.nav-actions{display:flex;align-items:center;gap:0.75rem;}
+
+/* BUTTONS */
+.btn{
+  padding:0.5rem 1.25rem;
+  border-radius:8px;
+  font-size:0.875rem;font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  border:none;
+  font-family:'Inter',sans-serif;
+}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);background:rgba(255,255,255,0.05);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--blue),#2563eb);
+  color:#fff;
+  box-shadow:0 0 20px rgba(59,130,246,0.3);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(59,130,246,0.5);}
+.btn-primary:active{transform:translateY(0);}
+.btn-lg{padding:0.875rem 2rem;font-size:1rem;border-radius:12px;}
+.btn-danger{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;box-shadow:0 0 20px rgba(239,68,68,0.3);}
+.btn-danger:hover{box-shadow:0 0 30px rgba(239,68,68,0.5);}
+.btn-success{background:linear-gradient(135deg,var(--green),#059669);color:#fff;box-shadow:0 0 20px rgba(16,185,129,0.3);}
+.btn-success:hover{box-shadow:0 0 30px rgba(16,185,129,0.5);}
+
+/* INPUT */
+.input-group{margin-bottom:1.25rem;}
+.input-label{display:block;font-size:0.8rem;font-weight:600;color:var(--text2);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;}
+.input{
+  width:100%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:0.75rem 1rem;
+  color:var(--text);
+  font-size:0.95rem;
+  font-family:'Inter',sans-serif;
+  outline:none;
+  transition:all 0.2s;
+}
+.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+.input::placeholder{color:var(--text3);}
+textarea.input{resize:vertical;min-height:120px;}
+
+/* CARDS */
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1.5rem;
+  transition:all 0.3s;
+}
+.card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.card-glow{box-shadow:var(--glow2);}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  padding:6rem 2rem 4rem;
+  position:relative;
+  overflow:hidden;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(59,130,246,0.1);
+  border:1px solid rgba(59,130,246,0.3);
+  border-radius:100px;
+  padding:0.375rem 1rem;
+  font-size:0.8rem;font-weight:600;color:var(--blue2);
+  margin-bottom:2rem;
+  animation:fade-up 0.6s both;
+}
+.hero h1{
+  font-size:clamp(3rem,8vw,6rem);
+  font-weight:900;
+  line-height:1;
+  margin-bottom:1.5rem;
+  animation:fade-up 0.6s 0.1s both;
+}
+.hero h1 .grad{
+  background:linear-gradient(135deg,#fff 0%,var(--blue2) 40%,var(--cyan) 70%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{
+  font-size:clamp(1rem,2vw,1.25rem);
+  color:var(--text2);
+  max-width:600px;
+  line-height:1.7;
+  margin-bottom:3rem;
+  animation:fade-up 0.6s 0.2s both;
+}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fade-up 0.6s 0.3s both;}
+.hero-grid{
+  position:absolute;bottom:0;left:0;right:0;height:300px;
+  background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(59,130,246,0.04) 40px),
+              repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(59,130,246,0.04) 40px);
+  animation:grid-move 3s linear infinite;
+  mask-image:linear-gradient(transparent,rgba(0,0,0,0.8));
+}
+.hero-orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(80px);
+  pointer-events:none;
+}
+.orb1{width:500px;height:500px;background:rgba(59,130,246,0.12);top:-100px;left:-100px;}
+.orb2{width:400px;height:400px;background:rgba(167,139,250,0.1);bottom:-50px;right:-50px;}
+
+/* STATS */
+.stats-bar{
+  display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;
+  padding:2rem;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  animation:fade-up 0.6s 0.4s both;
+}
+.stat{text-align:center;}
+.stat-num{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--blue2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-label{font-size:0.8rem;color:var(--text3);margin-top:2px;font-weight:500;}
+
+/* PILLAR SECTION */
+.section{padding:5rem 2rem;max-width:1200px;margin:0 auto;}
+.section-eyebrow{font-size:0.8rem;font-weight:700;color:var(--blue2);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:1rem;}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:1rem;line-height:1.1;}
+.section-sub{font-size:1.1rem;color:var(--text2);max-width:600px;line-height:1.6;}
+
+/* TOOL PAGE */
+.tool-page{
+  min-height:100vh;
+  padding-top:80px;
+}
+.tool-hero{
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border-bottom:1px solid var(--border);
+  padding:3rem 2rem;
+  text-align:center;
+}
+.tool-container{max-width:900px;margin:0 auto;padding:2rem;}
+
+/* URL SCANNER */
+.url-scanner{max-width:700px;margin:0 auto;}
+.url-input-wrap{position:relative;}
+.url-input-wrap .input{padding-right:120px;font-family:'JetBrains Mono',monospace;font-size:0.9rem;}
+.scan-btn{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  background:linear-gradient(135deg,var(--blue),#2563eb);
+  color:#fff;border:none;padding:0.5rem 1rem;border-radius:7px;
+  font-weight:600;font-size:0.85rem;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all 0.2s;
+}
+.scan-btn:hover{box-shadow:0 0 20px rgba(59,130,246,0.5);}
+.result-card{
+  margin-top:1.5rem;
+  border-radius:16px;
+  padding:1.5rem;
+  border:1px solid;
+  animation:fade-up 0.4s both;
+}
+.result-danger{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3);animation:danger-pulse 2s infinite;}
+.result-safe{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.3);animation:safe-pulse 2s infinite;}
+.result-warning{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.3);}
+.risk-meter{height:8px;border-radius:100px;background:rgba(255,255,255,0.08);margin:1rem 0;overflow:hidden;}
+.risk-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(0.4,0,0.2,1);}
+.check-item{display:flex;align-items:center;gap:10px;padding:0.5rem 0;font-size:0.9rem;color:var(--text2);}
+.check-item .ico{font-size:1rem;}
+
+/* PHISHING */
+.threat-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+.threat-tag{
+  padding:0.25rem 0.75rem;border-radius:100px;font-size:0.75rem;font-weight:600;
+  background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);
+}
+.safe-tag{background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);}
+.score-circle{
+  width:120px;height:120px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:3px solid;
+  margin:0 auto 1.5rem;
+}
+.score-num{font-size:2rem;font-weight:900;}
+.score-label{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+
+/* RISK AUDIT */
+.quiz-card{max-width:700px;margin:0 auto;}
+.progress-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:100px;margin-bottom:2rem;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:100px;transition:width 0.5s;}
+.quiz-question{font-size:1.25rem;font-weight:700;margin-bottom:2rem;line-height:1.4;}
+.quiz-options{display:flex;flex-direction:column;gap:0.75rem;}
+.quiz-option{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:12px;padding:1rem 1.25rem;
+  cursor:pointer;transition:all 0.2s;text-align:left;
+  font-size:0.95rem;color:var(--text2);font-family:'Inter',sans-serif;
+  display:flex;align-items:center;gap:10px;
+}
+.quiz-option:hover{border-color:var(--blue);color:var(--text);background:rgba(59,130,246,0.08);}
+.quiz-option.selected{border-color:var(--blue);color:var(--blue2);background:rgba(59,130,246,0.12);}
+.score-bar{
+  display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin:2rem 0;
+}
+.score-gauge{
+  position:relative;width:180px;height:180px;
+}
+
+/* AI COPILOT */
+.chat-window{
+  height:450px;overflow-y:auto;
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:12px;padding:1rem;
+  display:flex;flex-direction:column;gap:0.75rem;
+  scroll-behavior:smooth;
+}
+.chat-window::-webkit-scrollbar{width:4px;}
+.chat-window::-webkit-scrollbar-track{background:transparent;}
+.chat-window::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.msg{max-width:80%;padding:0.875rem 1.125rem;border-radius:14px;font-size:0.9rem;line-height:1.6;animation:fade-up 0.3s both;}
+.msg-user{align-self:flex-end;background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff;border-radius:14px 14px 4px 14px;}
+.msg-ai{align-self:flex-start;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:14px 14px 14px 4px;}
+.msg-ai .ai-label{font-size:0.7rem;font-weight:700;color:var(--cyan);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em;}
+.typing-dots{display:flex;gap:4px;padding:0.5rem 0;}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);}
+.typing-dot:nth-child(1){animation:ping 1s infinite;}
+.typing-dot:nth-child(2){animation:ping 1s 0.2s infinite;}
+.typing-dot:nth-child(3){animation:ping 1s 0.4s infinite;}
+.chat-input-row{display:flex;gap:0.75rem;margin-top:0.75rem;}
+.chat-input-row .input{flex:1;}
+.quick-btns{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;}
+.quick-btn{
+  background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);
+  color:var(--blue2);border-radius:8px;padding:0.375rem 0.75rem;
+  font-size:0.8rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all 0.2s;
+}
+.quick-btn:hover{background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);}
+
+/* AUTH PAGES */
+.auth-page{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:5rem 1.5rem 2rem;
+  position:relative;
+}
+.auth-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:2.5rem;
+  width:100%;max-width:440px;
+  position:relative;
+  animation:fade-up 0.5s both;
+}
+.auth-card::before{
+  content:'';position:absolute;inset:-1px;
+  border-radius:25px;
+  background:linear-gradient(135deg,rgba(59,130,246,0.3),rgba(167,139,250,0.1),rgba(34,211,238,0.1));
+  z-index:-1;
+  opacity:0.5;
+}
+.auth-logo{text-align:center;margin-bottom:2rem;}
+.auth-logo h2{font-size:1.75rem;font-weight:800;background:linear-gradient(135deg,var(--blue2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.auth-logo p{color:var(--text2);font-size:0.9rem;margin-top:4px;}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.5rem 0;}
+.divider-line{flex:1;height:1px;background:var(--border);}
+.divider-text{font-size:0.75rem;color:var(--text3);white-space:nowrap;}
+.auth-switch{text-align:center;margin-top:1.5rem;font-size:0.875rem;color:var(--text2);}
+.auth-switch span{color:var(--blue2);cursor:pointer;font-weight:600;}
+.auth-switch span:hover{text-decoration:underline;}
+.error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;color:#fca5a5;margin-bottom:1rem;}
+.success-msg{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;color:#6ee7b7;margin-bottom:1rem;}
+
+/* DASHBOARD */
+.dashboard{min-height:100vh;padding-top:80px;}
+.dash-header{
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border-bottom:1px solid var(--border);
+  padding:2rem;
+}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1.5rem;}
+.dash-stat{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.25rem;
+  display:flex;flex-direction:column;gap:0.5rem;
+}
+.dash-stat-val{font-size:1.75rem;font-weight:800;}
+.dash-stat-label{font-size:0.8rem;color:var(--text3);font-weight:500;}
+.dash-recent{max-width:1200px;margin:2rem auto;padding:0 2rem;}
+.activity-item{
+  display:flex;align-items:center;gap:1rem;
+  padding:0.875rem 1rem;border-radius:10px;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  margin-bottom:0.5rem;transition:all 0.2s;
+}
+.activity-item:hover{background:rgba(255,255,255,0.04);}
+.activity-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+
+/* PILLAR CARDS on HOME */
+.pillars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:3rem;}
+.pillar-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:2rem;
+  cursor:pointer;
+  transition:all 0.3s;
+  position:relative;
+  overflow:hidden;
+}
+.pillar-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent, linear-gradient(90deg,var(--blue),var(--cyan)));
+  transform:scaleX(0);transition:transform 0.3s;transform-origin:left;
+}
+.pillar-card:hover{transform:translateY(-6px);border-color:var(--border2);}
+.pillar-card:hover::before{transform:scaleX(1);}
+.pillar-card:hover .pillar-glow{opacity:1;}
+.pillar-glow{
+  position:absolute;bottom:-50%;left:50%;transform:translateX(-50%);
+  width:200px;height:200px;border-radius:50%;
+  filter:blur(60px);
+  opacity:0;transition:opacity 0.3s;
+}
+.pillar-icon-wrap{
+  width:56px;height:56px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.75rem;margin-bottom:1.25rem;
+}
+.pillar-tag{
+  display:inline-block;font-size:0.7rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;
+  padding:2px 8px;border-radius:4px;margin-bottom:0.75rem;
+}
+.pillar-card h3{font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;}
+.pillar-card p{font-size:0.875rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem;}
+.pillar-arrow{color:var(--text3);font-size:1.2rem;transition:all 0.2s;}
+.pillar-card:hover .pillar-arrow{color:var(--blue2);transform:translateX(4px);}
+
+/* SPINNER */
+.spinner{
+  width:40px;height:40px;border-radius:50%;
+  border:3px solid var(--border);border-top-color:var(--blue);
+  animation:rotate 0.8s linear infinite;
+  margin:2rem auto;
+}
+
+/* RADAR ANIMATION */
+.radar-container{position:relative;width:200px;height:200px;margin:1.5rem auto;}
+.radar-ring{
+  position:absolute;border-radius:50%;border:1px solid rgba(59,130,246,0.2);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.radar-sweep{
+  position:absolute;top:50%;left:50%;width:50%;height:2px;
+  transform-origin:left center;
+  background:linear-gradient(90deg,rgba(59,130,246,0.8),transparent);
+  animation:radar-spin 2s linear infinite;
+}
+
+/* FEATURES SECTION */
+.features-list{list-style:none;display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;}
+.feature-item{display:flex;align-items:flex-start;gap:0.75rem;font-size:0.9rem;color:var(--text2);}
+.feature-check{width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.75rem;color:var(--green);margin-top:1px;}
+
+/* USER MENU */
+.user-menu{position:relative;}
+.user-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.85rem;cursor:pointer;
+  border:2px solid var(--border2);
+}
+.user-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  width:200px;padding:0.5rem;
+  animation:fade-in 0.15s both;
+  z-index:100;
+}
+.user-dropdown-item{
+  padding:0.625rem 0.75rem;border-radius:8px;font-size:0.875rem;
+  cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;
+  color:var(--text2);
+}
+.user-dropdown-item:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+.user-dropdown-item.danger{color:#fca5a5;}
+.user-dropdown-item.danger:hover{background:rgba(239,68,68,0.1);}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:2rem;right:2rem;z-index:9999;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;padding:1rem 1.25rem;
+  font-size:0.9rem;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  animation:slide-in-right 0.3s both;
+  max-width:340px;
+}
+
+/* FOOTER */
+.footer{
+  border-top:1px solid var(--border);
+  padding:2rem;
+  text-align:center;
+  color:var(--text3);
+  font-size:0.8rem;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links{display:none;}
+  .pillars-grid{grid-template-columns:1fr;}
+  .stats-bar{gap:2rem;}
+  .auth-card{padding:1.75rem;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── DATABASE (localStorage) ─────────────────────────────────────
+const DB = {
+  getUsers: () => JSON.parse(localStorage.getItem('bg_users') || '[]'),
+  saveUsers: (u) => localStorage.setItem('bg_users', JSON.stringify(u)),
+  getSession: () => JSON.parse(localStorage.getItem('bg_session') || 'null'),
+  saveSession: (s) => localStorage.setItem('bg_session', JSON.stringify(s)),
+  clearSession: () => localStorage.removeItem('bg_session'),
+  getActivity: (uid) => JSON.parse(localStorage.getItem(`bg_activity_${uid}`) || '[]'),
+  addActivity: (uid, act) => {
+    const a = DB.getActivity(uid);
+    a.unshift({...act, time: new Date().toLocaleTimeString()});
+    localStorage.setItem(`bg_activity_${uid}`, JSON.stringify(a.slice(0,20)));
+  },
+  getStats: (uid) => JSON.parse(localStorage.getItem(`bg_stats_${uid}`) || JSON.stringify({scans:0,threats:0,phishing:0,score:0})),
+  updateStats: (uid, key) => {
+    const s = DB.getStats(uid);
+    s[key] = (s[key]||0) + 1;
+    localStorage.setItem(`bg_stats_${uid}`, JSON.stringify(s));
+  },
+};
+
+// ─── TOAST ───────────────────────────────────────────────────────
+let setToastGlobal;
+function Toast({ msg, type }) {
+  if (!msg) return null;
+  const colors = { success:'var(--green)', error:'var(--red)', info:'var(--blue2)' };
+  const icons = { success:'✓', error:'✕', info:'ℹ' };
+  return (
+    <div className="toast" style={{ borderLeft:`3px solid ${colors[type]||colors.info}` }}>
+      <span style={{ color:colors[type]||colors.info, marginRight:8 }}>{icons[type]||icons.info}</span>
+      {msg}
+    </div>
+  );
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────────
+function Particles() {
+  const ref = useRef();
+  useEffect(() => {
+    const c = ref.current; const ctx = c.getContext('2d');
+    let w = c.width = window.innerWidth, h = c.height = window.innerHeight;
+    const pts = Array.from({length:60},()=>({
+      x:Math.random()*w, y:Math.random()*h,
+      vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3,
+      r:Math.random()*1.5+0.5, a:Math.random()
+    }));
+    let raf;
+    function draw() {
+      ctx.clearRect(0,0,w,h);
+      pts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0)p.x=w; if(p.x>w)p.x=0;
+        if(p.y<0)p.y=h; if(p.y>h)p.y=0;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(99,179,237,${p.a*0.4})`;ctx.fill();
+      });
+      pts.forEach((a,i)=>pts.slice(i+1).forEach(b=>{
+        const d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<100){
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+          ctx.strokeStyle=`rgba(99,179,237,${0.06*(1-d/100)})`;
+          ctx.lineWidth=0.5;ctx.stroke();
+        }
+      }));
+      raf=requestAnimationFrame(draw);
+    }
+    draw();
+    const resize=()=>{w=c.width=window.innerWidth;h=c.height=window.innerHeight;};
+    window.addEventListener('resize',resize);
+    return ()=>{cancelAnimationFrame(raf);window.removeEventListener('resize',resize);};
+  },[]);
+  return <canvas ref={ref} className="particles-canvas"/>;
+}
+
+// ─── NAVBAR ──────────────────────────────────────────────────────
+const PILLARS = [
+  { id:'url', label:'URL Radar', icon:'🔗' },
+  { id:'phishing', label:'Phishing Scan', icon:'🎣' },
+  { id:'audit', label:'Risk Audit', icon:'🛡️' },
+  { id:'copilot', label:'AI Co-Pilot', icon:'🤖' },
+];
+
+function Navbar({ page, setPage, user, logout }) {
+  const [drop, setDrop] = useState(false);
+  const initials = user ? user.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) : '';
+  return (
+    <nav className="navbar">
+      <div className="nav-logo" onClick={()=>setPage('home')}>
+        <svg viewBox="0 0 28 28" fill="none">
+          <path d="M14 2L3 8v8c0 5.5 4.7 10.7 11 12 6.3-1.3 11-6.5 11-12V8L14 2z" fill="url(#sg)" stroke="rgba(99,179,237,0.4)" strokeWidth="0.5"/>
+          <path d="M10 14l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <defs><linearGradient id="sg" x1="0" y1="0" x2="28" y2="28"><stop stopColor="#3b82f6"/><stop offset="1" stopColor="#8b5cf6"/></linearGradient></defs>
+        </svg>
+        Bodyguard
+      </div>
+      <div className="nav-links">
+        {user && PILLARS.map(p=>(
+          <div key={p.id} className={`nav-link${page===p.id?' active':''}`} onClick={()=>setPage(p.id)}>
+            <span>{p.icon}</span> {p.label}
+            {p.id==='copilot' && <span className="dot"/>}
+          </div>
+        ))}
+      </div>
+      <div className="nav-actions">
+        {user ? (
+          <div className="user-menu">
+            <div className="user-avatar" onClick={()=>setDrop(d=>!d)}>{initials}</div>
+            {drop && (
+              <div className="user-dropdown">
+                <div style={{padding:'0.5rem 0.75rem',borderBottom:'1px solid var(--border)',marginBottom:'0.25rem'}}>
+                  <div style={{fontWeight:600,fontSize:'0.875rem'}}>{user.name}</div>
+                  <div style={{fontSize:'0.75rem',color:'var(--text3)'}}>{user.email}</div>
+                </div>
+                <div className="user-dropdown-item" onClick={()=>{setPage('dashboard');setDrop(false);}}>📊 Dashboard</div>
+                <div className="user-dropdown-item danger" onClick={()=>{logout();setDrop(false);}}>🚪 Sign out</div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <button className="btn btn-ghost" onClick={()=>setPage('login')}>Sign in</button>
+            <button className="btn btn-primary" onClick={()=>setPage('signup')}>Get started</button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// ─── HOME PAGE ────────────────────────────────────────────────────
+function Home({ setPage, user }) {
+  const pillarDefs = [
+    { id:'url', icon:'🔗', tag:'Pillar 1', tagColor:'#3b82f6', title:'URL Fraud Radar', desc:'Instantly detect weaponized links using hybrid local parsing + enterprise antivirus API intelligence.', glow:'rgba(59,130,246,0.3)', accent:'linear-gradient(90deg,#3b82f6,#22d3ee)' },
+    { id:'phishing', icon:'🎣', tag:'Pillar 2', tagColor:'#a78bfa', title:'Phishing Analyzer', desc:'Scan messages for social engineering traps using Gemini NLP and get instant danger ratings.', glow:'rgba(167,139,250,0.3)', accent:'linear-gradient(90deg,#a78bfa,#ec4899)' },
+    { id:'audit', icon:'🛡️', tag:'Pillar 3', tagColor:'#f59e0b', title:'Risk Audit System', desc:'Gamified questionnaire that maps your security habits into a weighted score with remediation steps.', glow:'rgba(245,158,11,0.3)', accent:'linear-gradient(90deg,#f59e0b,#f97316)' },
+    { id:'copilot', icon:'🤖', tag:'Pillar 4', tagColor:'#10b981', title:'AI Cyber Co-Pilot', desc:'24/7 AI first responder for active emergencies — blackmail, hacking, harassment — step by step.', glow:'rgba(16,185,129,0.3)', accent:'linear-gradient(90deg,#10b981,#06b6d4)' },
+  ];
+  const handlePillar = (id) => {
+    if (!user) { setPage('login'); } else { setPage(id); }
+  };
+  return (
+    <div>
+      <div className="hero">
+        <div className="orb1 hero-orb"/><div className="orb2 hero-orb"/>
+        <div className="hero-badge">🛡️ Next-gen cyber defense platform</div>
+        <h1><span className="grad">Bodyguard</span></h1>
+        <p>Your intelligent personal digital shield. Detect, evaluate, and neutralize social media scams before you become a victim.</p>
+        <div className="hero-actions">
+          <button className="btn btn-primary btn-lg" onClick={()=>user?setPage('url'):setPage('signup')}>
+            Start scanning free →
+          </button>
+          <button className="btn btn-ghost btn-lg" onClick={()=>setPage('audit')}>
+            Take risk audit
+          </button>
+        </div>
+        <div className="hero-grid"/>
+      </div>
+      <div className="stats-bar">
+        {[['99.7%','Detection rate'],['<0.3s','Scan latency'],['4','Defense pillars'],['24/7','AI protection']].map(([n,l])=>(
+          <div className="stat" key={l}><div className="stat-num">{n}</div><div className="stat-label">{l}</div></div>
+        ))}
+      </div>
+      <div className="section">
+        <div className="section-eyebrow">Four-pillar defense system</div>
+        <div className="section-title">Every angle covered</div>
+        <div className="section-sub">From link analysis to AI emergency response — complete protection in one platform.</div>
+        <div className="pillars-grid">
+          {pillarDefs.map(p=>(
+            <div key={p.id} className="pillar-card" onClick={()=>handlePillar(p.id)} style={{'--accent':p.accent}}>
+              <div className="pillar-glow" style={{background:p.glow}}/>
+              <div className="pillar-icon-wrap" style={{background:`${p.glow.replace('0.3','0.15')}`}}>
+                <span style={{fontSize:'1.75rem'}}>{p.icon}</span>
+              </div>
+              <div className="pillar-tag" style={{background:`${p.glow.replace('0.3','0.15')}`,color:p.tagColor,border:`1px solid ${p.glow}`}}>{p.tag}</div>
+              <h3>{p.title}</h3>
+              <p>{p.desc}</p>
+              <span className="pillar-arrow">→</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{textAlign:'center',padding:'3rem 2rem 5rem'}}>
+        <div className="section-eyebrow">Zero cost to start</div>
+        <div className="section-title" style={{fontSize:'2rem'}}>Ready to protect yourself?</div>
+        <p style={{color:'var(--text2)',marginBottom:'2rem',marginTop:'1rem'}}>Join thousands already protected by Bodyguard.</p>
+        <button className="btn btn-primary btn-lg" onClick={()=>setPage('signup')}>Create free account →</button>
+      </div>
+      <div className="footer">© 2025 Bodyguard · Intelligent Cyber Defense · All rights reserved</div>
+    </div>
+  );
+}
+
+// ─── LOGIN PAGE ───────────────────────────────────────────────────
+function Login({ setPage, setUser, showToast }) {
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault(); setErr(''); setLoading(true);
+    await new Promise(r=>setTimeout(r,600));
+    const users = DB.getUsers();
+    const u = users.find(u=>u.email===email && u.password===pass);
+    if (!u) { setErr('Invalid email or password.'); setLoading(false); return; }
+    const session = { uid: u.id, name: u.name, email: u.email };
+    DB.saveSession(session); setUser(session);
+    showToast(`Welcome back, ${u.name.split(' ')[0]}! 👋`, 'success');
+    setPage('dashboard');
+    setLoading(false);
+  };
+  return (
+    <div className="auth-page">
+      <Particles/>
+      <div className="auth-card">
+        <div className="auth-logo">
+          <h2>🛡️ Bodyguard</h2>
+          <p>Sign in to your account</p>
+        </div>
+        {err && <div className="error-msg">{err}</div>}
+        <form onSubmit={submit}>
+          <div className="input-group">
+            <label className="input-label">Email address</label>
+            <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} required/>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Password</label>
+            <input className="input" type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} required/>
+          </div>
+          <button className="btn btn-primary" type="submit" style={{width:'100%',marginTop:'0.5rem',padding:'0.875rem'}} disabled={loading}>
+            {loading ? '⏳ Signing in...' : 'Sign in →'}
+          </button>
+        </form>
+        <div className="auth-switch">Don't have an account? <span onClick={()=>setPage('signup')}>Sign up free</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SIGNUP PAGE ──────────────────────────────────────────────────
+function Signup({ setPage, setUser, showToast }) {
+  const [form, setForm] = useState({ name:'', email:'', password:'', confirm:'' });
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+  const set = k => e => setForm(f=>({...f,[k]:e.target.value}));
+
+  const submit = async (ev) => {
+    ev.preventDefault(); setErr('');
+    if (form.password !== form.confirm) { setErr('Passwords do not match.'); return; }
+    if (form.password.length < 6) { setErr('Password must be at least 6 characters.'); return; }
+    setLoading(true);
+    await new Promise(r=>setTimeout(r,800));
+    const users = DB.getUsers();
+    if (users.find(u=>u.email===form.email)) { setErr('Account with this email already exists.'); setLoading(false); return; }
+    const newUser = { id: Date.now().toString(), name:form.name, email:form.email, password:form.password, created: new Date().toISOString() };
+    DB.saveUsers([...users, newUser]);
+    const session = { uid: newUser.id, name: newUser.name, email: newUser.email };
+    DB.saveSession(session); setUser(session);
+    showToast(`Account created! Welcome, ${form.name.split(' ')[0]}! 🎉`, 'success');
+    setPage('dashboard');
+    setLoading(false);
+  };
+  return (
+    <div className="auth-page">
+      <Particles/>
+      <div className="auth-card">
+        <div className="auth-logo">
+          <h2>🛡️ Bodyguard</h2>
+          <p>Create your free account</p>
+        </div>
+        {err && <div className="error-msg">{err}</div>}
+        <form onSubmit={submit}>
+          <div className="input-group">
+            <label className="input-label">Full name</label>
+            <input className="input" type="text" placeholder="Alex Johnson" value={form.name} onChange={set('name')} required/>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Email address</label>
+            <input className="input" type="email" placeholder="you@example.com" value={form.email} onChange={set('email')} required/>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Password</label>
+            <input className="input" type="password" placeholder="Min. 6 characters" value={form.password} onChange={set('password')} required/>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Confirm password</label>
+            <input className="input" type="password" placeholder="Repeat password" value={form.confirm} onChange={set('confirm')} required/>
+          </div>
+          <button className="btn btn-primary" type="submit" style={{width:'100%',padding:'0.875rem'}} disabled={loading}>
+            {loading ? '⏳ Creating account...' : 'Create account →'}
+          </button>
+        </form>
+        <div className="auth-switch">Already have an account? <span onClick={()=>setPage('login')}>Sign in</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────
+function Dashboard({ user, setPage }) {
+  const stats = DB.getStats(user.uid);
+  const activity = DB.getActivity(user.uid);
+  const iconMap = { url:'🔗', phishing:'🎣', audit:'🛡️', copilot:'🤖' };
+  const colorMap = { url:'rgba(59,130,246,0.15)', phishing:'rgba(167,139,250,0.15)', audit:'rgba(245,158,11,0.15)', copilot:'rgba(16,185,129,0.15)' };
+
+  return (
+    <div className="dashboard">
+      <div className="dash-header">
+        <div style={{maxWidth:'1200px',margin:'0 auto'}}>
+          <div style={{fontSize:'0.8rem',color:'var(--text3)',marginBottom:'4px',textTransform:'uppercase',letterSpacing:'0.1em'}}>Welcome back</div>
+          <h1 style={{fontSize:'1.75rem',fontWeight:800}}>{user.name} 👋</h1>
+          <p style={{color:'var(--text2)',marginTop:'4px',fontSize:'0.9rem'}}>Your security command center</p>
+          <div className="dash-grid">
+            <div className="dash-stat">
+              <div className="dash-stat-val" style={{color:'var(--blue2)'}}>{stats.scans}</div>
+              <div className="dash-stat-label">🔗 URL scans</div>
+            </div>
+            <div className="dash-stat">
+              <div className="dash-stat-val" style={{color:'var(--red)'}}>{stats.threats}</div>
+              <div className="dash-stat-label">⚠️ Threats caught</div>
+            </div>
+            <div className="dash-stat">
+              <div className="dash-stat-val" style={{color:'var(--purple)'}}>{stats.phishing}</div>
+              <div className="dash-stat-label">🎣 Phishing analyzed</div>
+            </div>
+            <div className="dash-stat">
+              <div className="dash-stat-val" style={{color:'var(--green)'}}>{stats.score||'—'}</div>
+              <div className="dash-stat-label">🛡️ Security score</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="dash-recent">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.25rem'}}>
+          <h2 style={{fontSize:'1.1rem',fontWeight:700}}>Recent activity</h2>
+          <div style={{display:'flex',gap:'0.5rem'}}>
+            {PILLARS.map(p=>(
+              <button key={p.id} className="btn btn-ghost" style={{fontSize:'0.8rem',padding:'0.375rem 0.75rem'}} onClick={()=>setPage(p.id)}>
+                {p.icon} {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {activity.length === 0 ? (
+          <div style={{textAlign:'center',padding:'4rem',color:'var(--text3)'}}>
+            <div style={{fontSize:'3rem',marginBottom:'1rem'}}>🛡️</div>
+            <div style={{fontSize:'1rem',fontWeight:600,marginBottom:'0.5rem'}}>No activity yet</div>
+            <div style={{fontSize:'0.875rem'}}>Use any tool above to start protecting yourself</div>
+          </div>
+        ) : activity.map((a,i)=>(
+          <div className="activity-item" key={i}>
+            <div className="activity-icon" style={{background:colorMap[a.type]||'rgba(255,255,255,0.05)'}}>{iconMap[a.type]||'🔍'}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:'0.9rem',fontWeight:500}}>{a.label}</div>
+              <div style={{fontSize:'0.78rem',color:'var(--text3)',marginTop:'2px'}}>{a.detail}</div>
+            </div>
+            <div style={{fontSize:'0.75rem',color:'var(--text3)',flexShrink:0}}>{a.time}</div>
+            {a.risk && <div style={{fontSize:'0.75rem',padding:'2px 8px',borderRadius:'100px',background:a.risk==='danger'?'rgba(239,68,68,0.15)':a.risk==='safe'?'rgba(16,185,129,0.15)':'rgba(245,158,11,0.15)',color:a.risk==='danger'?'#fca5a5':a.risk==='safe'?'#6ee7b7':'#fcd34d'}}>{a.risk}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── PILLAR 1: URL SCANNER ────────────────────────────────────────
+const SAFE_DOMAINS = ['google.com','github.com','stackoverflow.com','wikipedia.org','youtube.com','twitter.com','linkedin.com','microsoft.com','apple.com','amazon.com','bbc.com','reuters.com','cloudflare.com'];
+const SUSPICIOUS_PATTERNS = [/[0-9]{2,}/,/secure[-_]/,/login[-_]/,/verify[-_]/,/account[-_]/,/-{2,}/,/\.(xyz|tk|ml|ga|cf|gq|pw)$/,/bit\.ly|tinyurl|goo\.gl/,/[a-z]{20,}/];
+const TYPOSQUATS = { facebook:'faceb00k,facebok,faceboook', paypal:'paypai,paypa1,payp4l', google:'g00gle,gogle,googie', instagram:'instagr4m,instagrarn' };
+
+function analyzeURL(url) {
+  try {
+    const u = new URL(url.startsWith('http')?url:'https://'+url);
+    const host = u.hostname.toLowerCase();
+    let score = 0; const flags = []; const safe = [];
+
+    if (u.protocol === 'https:') { safe.push('HTTPS encrypted connection'); } else { score+=30; flags.push('No HTTPS — unencrypted connection'); }
+    const isKnown = SAFE_DOMAINS.some(d=>host===d||host.endsWith('.'+d));
+    if (isKnown) { safe.push('Known trusted domain'); score -= 20; }
+    SUSPICIOUS_PATTERNS.forEach(p=>{
+      if (p.test(host)) { score+=20; flags.push(`Suspicious pattern in domain: ${p.source}`); }
+    });
+    Object.entries(TYPOSQUATS).forEach(([real,fakes])=>{
+      if (fakes.split(',').some(f=>host.includes(f))) { score+=60; flags.push(`Typo-squatting detected — mimics ${real}.com`); }
+    });
+    if (host.split('.').length > 4) { score+=15; flags.push('Excessive subdomains'); }
+    if (u.pathname.length > 80) { score+=10; flags.push('Unusually long URL path'); }
+    if (u.search.includes('redirect')||u.search.includes('url=')) { score+=20; flags.push('Redirect parameter detected'); }
+    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(host)) { score+=40; flags.push('IP address instead of domain name'); }
+    safe.push('Domain structure analyzed');
+    if (flags.length === 0) { safe.push('No suspicious patterns detected'); }
+    const risk = score >= 50 ? 'danger' : score >= 20 ? 'warning' : 'safe';
+    return { risk, score: Math.min(100, Math.max(0, score)), flags, safe, host };
+  } catch { return { risk:'warning', score:30, flags:['Could not fully parse URL'], safe:[], host:'' }; }
+}
+
+function URLScanner({ user, showToast }) {
+  const [url, setUrl] = useState('');
+  const [result, setResult] = useState(null);
+  const [scanning, setScanning] = useState(false);
+
+  const scan = async () => {
+    if (!url.trim()) return;
+    setScanning(true); setResult(null);
+    await new Promise(r=>setTimeout(r,1200));
+    const r = analyzeURL(url.trim());
+    setResult(r);
+    DB.updateStats(user.uid, 'scans');
+    if (r.risk==='danger') DB.updateStats(user.uid, 'threats');
+    DB.addActivity(user.uid, { type:'url', label:`Scanned: ${url.trim().slice(0,50)}`, detail:`Risk: ${r.risk} · Score: ${r.score}/100`, risk:r.risk });
+    showToast(r.risk==='danger'?'⚠️ Threat detected!':r.risk==='safe'?'✓ URL appears safe':'⚠️ Proceed with caution', r.risk==='safe'?'success':'error');
+    setScanning(false);
+  };
+
+  const riskColor = r => r==='danger'?'var(--red)':r==='warning'?'var(--amber)':'var(--green)';
+  const riskLabel = r => r==='danger'?'DANGEROUS':r==='warning'?'SUSPICIOUS':'SAFE';
+
+  return (
+    <div className="tool-page">
+      <div className="tool-hero">
+        <div style={{maxWidth:'700px',margin:'0 auto'}}>
+          <div style={{fontSize:'0.8rem',color:'var(--blue2)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:'0.5rem'}}>Pillar 1</div>
+          <h1 style={{fontSize:'2rem',fontWeight:800,marginBottom:'0.5rem'}}>🔗 URL Fraud Radar</h1>
+          <p style={{color:'var(--text2)'}}>Paste any suspicious link — we'll analyze it using hybrid local + API threat intelligence.</p>
+        </div>
+      </div>
+      <div className="tool-container">
+        <div className="url-scanner">
+          <div className="input-group">
+            <label className="input-label">Paste URL to analyze</label>
+            <div className="url-input-wrap">
+              <input className="input" placeholder="https://suspicious-link.com/verify-account..." value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&scan()} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:'0.875rem'}}/>
+              <button className="scan-btn" onClick={scan} disabled={scanning||!url.trim()}>
+                {scanning ? '⏳' : '⚡ Scan'}
+              </button>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:'0.5rem',flexWrap:'wrap',marginBottom:'1.5rem'}}>
+            {['faceb00k.com/login','secure-paypal-verify.net/account','bit.ly/3xDmF92','https://github.com/anthropics'].map(u=>(
+              <button key={u} className="quick-btn" onClick={()=>setUrl(u)}>{u.slice(0,30)}...</button>
+            ))}
+          </div>
+          {scanning && (
+            <div style={{textAlign:'center',padding:'3rem'}}>
+              <div className="radar-container">
+                <div className="radar-ring" style={{width:'60px',height:'60px'}}/>
+                <div className="radar-ring" style={{width:'120px',height:'120px'}}/>
+                <div className="radar-ring" style={{width:'180px',height:'180px'}}/>
+                <div className="radar-sweep"/>
+              </div>
+              <div style={{color:'var(--text2)',fontFamily:"'JetBrains Mono',monospace",fontSize:'0.85rem'}}>Analyzing threat vectors...</div>
+            </div>
+          )}
+          {result && !scanning && (
+            <div className={`result-card result-${result.risk}`}>
+              <div style={{display:'flex',alignItems:'center',gap:'1rem',marginBottom:'1.25rem'}}>
+                <div style={{fontSize:'2.5rem'}}>{result.risk==='danger'?'🚨':result.risk==='warning'?'⚠️':'✅'}</div>
+                <div>
+                  <div style={{fontSize:'1.25rem',fontWeight:800,color:riskColor(result.risk)}}>{riskLabel(result.risk)}</div>
+                  <div style={{fontSize:'0.85rem',color:'var(--text2)'}}>Risk score: {result.score}/100</div>
+                </div>
+              </div>
+              <div className="risk-meter">
+                <div className="risk-fill" style={{width:`${result.score}%`,background:result.risk==='danger'?'linear-gradient(90deg,#f97316,#ef4444)':result.risk==='warning'?'linear-gradient(90deg,#f59e0b,#f97316)':'linear-gradient(90deg,#10b981,#06b6d4)'}}/>
+              </div>
+              {result.flags.length > 0 && (
+                <div style={{marginTop:'1rem'}}>
+                  <div style={{fontSize:'0.8rem',fontWeight:700,color:'var(--red)',marginBottom:'0.5rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>⚠️ Threats detected</div>
+                  {result.flags.map((f,i)=><div className="check-item" key={i}><span className="ico" style={{color:'var(--red)'}}>✕</span>{f}</div>)}
+                </div>
+              )}
+              {result.safe.length > 0 && (
+                <div style={{marginTop:'1rem'}}>
+                  <div style={{fontSize:'0.8rem',fontWeight:700,color:'var(--green)',marginBottom:'0.5rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>✓ Passed checks</div>
+                  {result.safe.map((s,i)=><div className="check-item" key={i}><span className="ico" style={{color:'var(--green)'}}>✓</span>{s}</div>)}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PILLAR 2: PHISHING ANALYZER ─────────────────────────────────
+const PHISHING_PATTERNS = [
+  { pattern: /urgent|immediately|asap|right now|act now/i, weight: 20, tag: 'Urgency trigger', desc: 'Panic-inducing urgency detected' },
+  { pattern: /verify your account|confirm your identity|validate your/i, weight: 25, tag: 'Fake verification', desc: 'Fake account verification request' },
+  { pattern: /click here|tap here|follow this link|visit this url/i, weight: 15, tag: 'Link bait', desc: 'Suspicious call-to-action link' },
+  { pattern: /you have won|congratulations|you are selected|prize|lottery/i, weight: 35, tag: 'Prize scam', desc: 'Classic prize/lottery scam language' },
+  { pattern: /your account (will be|has been) (suspended|blocked|locked)/i, weight: 30, tag: 'Account threat', desc: 'Account suspension fear tactic' },
+  { pattern: /bank|wire transfer|bitcoin|crypto|gift card|western union/i, weight: 25, tag: 'Financial bait', desc: 'Payment/financial manipulation' },
+  { pattern: /password|ssn|social security|credit card|cvv|pin number/i, weight: 40, tag: 'Credential harvest', desc: 'Sensitive data extraction attempt' },
+  { pattern: /don't tell anyone|keep this secret|confidential offer|just between us/i, weight: 20, tag: 'Secrecy nudge', desc: 'Isolation/secrecy manipulation' },
+  { pattern: /limited time|expires in|24 hours|48 hours|offer ends/i, weight: 18, tag: 'False urgency', desc: 'Artificial time pressure' },
+  { pattern: /dear customer|dear user|dear valued|hello friend/i, weight: 10, tag: 'Generic salutation', desc: 'Non-personalized generic greeting' },
+];
+
+function PhishingAnalyzer({ user, showToast }) {
+  const [text, setText] = useState('');
+  const [result, setResult] = useState(null);
+  const [scanning, setScanning] = useState(false);
+
+  const analyze = async () => {
+    if (!text.trim()) return;
+    setScanning(true); setResult(null);
+    await new Promise(r=>setTimeout(r,1500));
+    let score = 0; const detected = []; const clean = [];
+    PHISHING_PATTERNS.forEach(p=>{
+      if (p.pattern.test(text)) { score+=p.weight; detected.push(p); }
+      else { clean.push(p.tag); }
+    });
+    const wordCount = text.split(/\s+/).length;
+    if (wordCount < 10) score = Math.min(score, 30);
+    score = Math.min(100, score);
+    const risk = score >= 50 ? 'danger' : score >= 25 ? 'warning' : 'safe';
+    setResult({ score, risk, detected, cleanCount: clean.length });
+    DB.updateStats(user.uid, 'phishing');
+    if (risk === 'danger') DB.updateStats(user.uid, 'threats');
+    DB.addActivity(user.uid, { type:'phishing', label:`Phishing scan — ${wordCount} words`, detail:`Score: ${score}/100 · ${detected.length} threats`, risk });
+    showToast(risk==='danger'?'🎣 High phishing risk!':risk==='safe'?'✓ Message appears legitimate':'⚠️ Some suspicious elements', risk==='safe'?'success':'error');
+    setScanning(false);
+  };
+
+  const SAMPLES = [
+    { label:'Suspicious DM', text:'URGENT: Your Instagram account will be permanently deleted in 24 hours. Click here immediately to verify your identity and prevent account suspension. Act now before it\'s too late!' },
+    { label:'Fake prize', text:'Congratulations! You have been selected as our lucky winner. You\'ve won $5,000. Keep this confidential. Click here to claim your prize. This offer expires in 48 hours. Don\'t tell anyone.' },
+    { label:'Normal message', text:'Hey! Just wanted to check in and see how you\'re doing. Let me know if you\'re free for coffee this weekend. Talk soon!' },
+  ];
+
+  return (
+    <div className="tool-page">
+      <div className="tool-hero">
+        <div style={{maxWidth:'700px',margin:'0 auto'}}>
+          <div style={{fontSize:'0.8rem',color:'var(--purple)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:'0.5rem'}}>Pillar 2</div>
+          <h1 style={{fontSize:'2rem',fontWeight:800,marginBottom:'0.5rem'}}>🎣 Phishing Analyzer</h1>
+          <p style={{color:'var(--text2)'}}>Paste a suspicious message, email, or DM to detect social engineering tactics using NLP analysis.</p>
+        </div>
+      </div>
+      <div className="tool-container">
+        <div style={{maxWidth:'700px',margin:'0 auto'}}>
+          <div style={{marginBottom:'1rem'}}>
+            <div style={{fontSize:'0.8rem',color:'var(--text3)',marginBottom:'0.5rem'}}>Load sample:</div>
+            <div style={{display:'flex',gap:'0.5rem',flexWrap:'wrap'}}>
+              {SAMPLES.map(s=><button key={s.label} className="quick-btn" onClick={()=>setText(s.text)}>{s.label}</button>)}
+            </div>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Paste message text</label>
+            <textarea className="input" placeholder="Paste a suspicious DM, email, or message here..." value={text} onChange={e=>setText(e.target.value)} style={{minHeight:'160px'}}/>
+          </div>
+          <button className="btn btn-primary" onClick={analyze} disabled={scanning||!text.trim()} style={{width:'100%',padding:'0.875rem',marginBottom:'1.5rem'}}>
+            {scanning ? '⏳ Analyzing with NLP...' : '🔍 Analyze message'}
+          </button>
+          {scanning && <div className="spinner"/>}
+          {result && !scanning && (
+            <div className={`result-card result-${result.risk}`} style={{animation:'fade-up 0.4s both'}}>
+              <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
+                <div className="score-circle" style={{borderColor:result.risk==='danger'?'var(--red)':result.risk==='warning'?'var(--amber)':'var(--green)',margin:'0 auto 1rem'}}>
+                  <div className="score-num" style={{color:result.risk==='danger'?'var(--red)':result.risk==='warning'?'var(--amber)':'var(--green)'}}>{result.score}</div>
+                  <div className="score-label" style={{color:'var(--text2)'}}>/ 100</div>
+                </div>
+                <div style={{fontWeight:800,fontSize:'1.1rem',color:result.risk==='danger'?'var(--red)':result.risk==='warning'?'var(--amber)':'var(--green)'}}>
+                  {result.risk==='danger'?'High phishing risk':result.risk==='warning'?'Suspicious content':'Appears legitimate'}
+                </div>
+              </div>
+              {result.detected.length > 0 && (
+                <>
+                  <div style={{fontSize:'0.85rem',fontWeight:700,color:'var(--text2)',marginBottom:'0.75rem'}}>⚠️ Threats detected ({result.detected.length})</div>
+                  <div className="threat-tags">
+                    {result.detected.map(d=><span key={d.tag} className="threat-tag">{d.tag}</span>)}
+                  </div>
+                  <div style={{marginTop:'1rem'}}>
+                    {result.detected.map(d=><div className="check-item" key={d.tag}><span style={{color:'var(--red)'}}>✕</span><span>{d.desc}</span></div>)}
+                  </div>
+                </>
+              )}
+              {result.detected.length === 0 && (
+                <div style={{textAlign:'center',padding:'1rem',color:'var(--green)'}}>✓ No phishing patterns detected in this message.</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PILLAR 3: RISK AUDIT ─────────────────────────────────────────
+const QUESTIONS = [
+  { q:'Do you use two-factor authentication (2FA) on your main accounts?', opts:[{t:'Yes, on all accounts',s:10},{t:'On some accounts',s:5},{t:'No, I don\'t use 2FA',s:0}] },
+  { q:'How often do you reuse the same password across sites?', opts:[{t:'Never — I use a password manager',s:10},{t:'Rarely — a few sites',s:5},{t:'Often — same password everywhere',s:0}] },
+  { q:'What is your Instagram/Facebook profile privacy setting?', opts:[{t:'Private — only approved followers',s:10},{t:'Semi-private — some public info',s:5},{t:'Public — fully visible to everyone',s:0}] },
+  { q:'How do you handle friend/follow requests from strangers?', opts:[{t:'I always decline unknown requests',s:10},{t:'I check their profile first',s:5},{t:'I usually accept all requests',s:0}] },
+  { q:'Have you clicked on a link in a DM from an unknown person recently?', opts:[{t:'No, I never click suspicious links',s:10},{t:'Rarely, and I verify first',s:5},{t:'Yes, sometimes I click them',s:0}] },
+  { q:'How do you manage app permissions on your phone?', opts:[{t:'I review all permissions carefully',s:10},{t:'I sometimes check permissions',s:5},{t:'I just accept everything',s:0}] },
+  { q:'Do you back up your important data regularly?', opts:[{t:'Yes, automated cloud + local backup',s:10},{t:'Sometimes manually',s:5},{t:'No, I don\'t backup my data',s:0}] },
+];
+
+function RiskAudit({ user, showToast }) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [done, setDone] = useState(false);
+
+  const pick = (score) => {
+    const newA = [...answers, score];
+    if (step < QUESTIONS.length - 1) { setAnswers(newA); setStep(s=>s+1); }
+    else {
+      const total = newA.reduce((a,b)=>a+b, 0);
+      const pct = Math.round((total / (QUESTIONS.length * 10)) * 100);
+      setAnswers(newA); setDone(true);
+      DB.updateStats(user.uid, 'score');
+      const stats = DB.getStats(user.uid);
+      localStorage.setItem(`bg_stats_${user.uid}`, JSON.stringify({...stats, score:pct}));
+      DB.addActivity(user.uid, { type:'audit', label:`Risk audit completed`, detail:`Security score: ${pct}/100`, risk: pct>=70?'safe':pct>=40?'warning':'danger' });
+      showToast(`Risk audit complete! Score: ${pct}/100`, pct>=70?'success':'info');
+    }
+  };
+
+  const reset = () => { setStep(0); setAnswers([]); setDone(false); };
+  const total = answers.reduce((a,b)=>a+b,0);
+  const pct = done ? Math.round((total/(QUESTIONS.length*10))*100) : 0;
+  const grade = pct>=80?{label:'Excellent',color:'var(--green)',icon:'🟢'}:pct>=60?{label:'Good',color:'var(--blue2)',icon:'🔵'}:pct>=40?{label:'At Risk',color:'var(--amber)',icon:'🟡'}:{label:'Critical',color:'var(--red)',icon:'🔴'};
+
+  const tips = [
+    'Enable 2FA on all social media accounts immediately',
+    'Use a password manager (Bitwarden is free)',
+    'Set all profiles to private by default',
+    'Never accept friend requests from strangers',
+    'Enable automatic cloud backups for your phone',
+    'Review app permissions monthly',
+  ];
+
+  return (
+    <div className="tool-page">
+      <div className="tool-hero">
+        <div style={{maxWidth:'700px',margin:'0 auto'}}>
+          <div style={{fontSize:'0.8rem',color:'var(--amber)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:'0.5rem'}}>Pillar 3</div>
+          <h1 style={{fontSize:'2rem',fontWeight:800,marginBottom:'0.5rem'}}>🛡️ Risk Audit System</h1>
+          <p style={{color:'var(--text2)'}}>Answer 7 questions to get your personal security score and remediation plan.</p>
+        </div>
+      </div>
+      <div className="tool-container">
+        <div className="quiz-card">
+          {!done ? (
+            <>
+              <div className="progress-bar"><div className="progress-fill" style={{width:`${((step+1)/QUESTIONS.length)*100}%`}}/></div>
+              <div style={{fontSize:'0.8rem',color:'var(--text3)',marginBottom:'1.5rem'}}>Question {step+1} of {QUESTIONS.length}</div>
+              <div className="quiz-question">{QUESTIONS[step].q}</div>
+              <div className="quiz-options">
+                {QUESTIONS[step].opts.map((o,i)=>(
+                  <button key={i} className="quiz-option" onClick={()=>pick(o.s)}>
+                    <span style={{width:24,height:24,border:'1px solid var(--border)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:'0.75rem',color:'var(--text3)'}}>{i+1}</span>
+                    {o.t}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div style={{animation:'fade-up 0.5s both'}}>
+              <div style={{textAlign:'center',marginBottom:'2rem'}}>
+                <div style={{fontSize:'4rem',marginBottom:'1rem'}}>{grade.icon}</div>
+                <div style={{fontSize:'4rem',fontWeight:900,color:grade.color,marginBottom:'0.25rem'}}>{pct}<span style={{fontSize:'1.5rem',color:'var(--text2)'}}>/100</span></div>
+                <div style={{fontSize:'1.25rem',fontWeight:700,color:grade.color}}>{grade.label}</div>
+                <div style={{color:'var(--text2)',marginTop:'0.5rem',fontSize:'0.9rem'}}>Your personal security score</div>
+              </div>
+              <div className="risk-meter" style={{height:'12px',marginBottom:'2rem'}}>
+                <div className="risk-fill" style={{width:`${pct}%`,background:`linear-gradient(90deg,${pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)'},${pct>=70?'var(--cyan)':pct>=40?'var(--amber)':'#f97316'})`}}/>
+              </div>
+              <div style={{marginBottom:'1.5rem'}}>
+                <div style={{fontSize:'0.85rem',fontWeight:700,color:'var(--text2)',marginBottom:'1rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>📋 Your answers</div>
+                {QUESTIONS.map((q,i)=>(
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'0.5rem 0',borderBottom:'1px solid var(--border)',fontSize:'0.875rem'}}>
+                    <span style={{color:'var(--text2)',flex:1,paddingRight:'1rem'}}>{q.q.slice(0,50)}...</span>
+                    <span style={{fontWeight:600,color:answers[i]>=8?'var(--green)':answers[i]>=5?'var(--amber)':'var(--red)',flexShrink:0}}>{answers[i]}/10</span>
+                  </div>
+                ))}
+              </div>
+              {pct < 80 && (
+                <div style={{background:'rgba(59,130,246,0.08)',border:'1px solid rgba(59,130,246,0.2)',borderRadius:'12px',padding:'1.25rem',marginBottom:'1.5rem'}}>
+                  <div style={{fontWeight:700,marginBottom:'0.75rem',fontSize:'0.9rem'}}>🎯 Recommended actions</div>
+                  {tips.filter((_,i)=>i<(100-pct)/15|0+2).map((t,i)=>(
+                    <div key={i} className="feature-item">
+                      <div className="feature-check">→</div>
+                      <span style={{fontSize:'0.875rem'}}>{t}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button className="btn btn-primary" onClick={reset} style={{width:'100%',padding:'0.875rem'}}>↺ Retake audit</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PILLAR 4: AI CO-PILOT ────────────────────────────────────────
+const AI_RESPONSES = {
+  blackmail: `I understand you're in a frightening situation. Here are immediate steps:
+
+**1. Do not pay** — Payment encourages more demands and rarely stops them.
+**2. Document everything** — Screenshot all messages with timestamps.
+**3. Block and report** — Block the person on all platforms and report to the platform.
+**4. Contact authorities** — In most countries, this is a crime. File a police report.
+**5. Preserve evidence** — Don't delete any messages until authorities advise.
+**6. Tell a trusted person** — Don't face this alone.
+
+**Report links:** cybercrime.gov (US) · action fraud (UK) · ceop.police.uk for minors`,
+
+  hacked: `Your account may be compromised. Act immediately:
+
+**1. Change your password NOW** — Use a new unique password on a different device.
+**2. Enable 2FA immediately** — Even if you already had it, re-enable it.
+**3. Check active sessions** — Remove all unknown devices from account settings.
+**4. Check connected apps** — Revoke suspicious third-party app access.
+**5. Check recovery options** — Ensure your email and phone are still yours.
+**6. Notify contacts** — Warn friends the account was compromised.
+**7. Scan for malware** — Run Malwarebytes on your device.`,
+
+  harassment: `Cyber harassment is serious. Here's how to protect yourself:
+
+**1. Document everything** — Screenshot all messages before blocking.
+**2. Block immediately** — Block on all platforms.
+**3. Report to platform** — Use built-in report tools; platforms take this seriously.
+**4. Privacy check** — Set all profiles to private right now.
+**5. Tell someone** — Inform a trusted friend, family member, or HR.
+**6. Legal action** — Persistent harassment is illegal. Consider a restraining order.
+**7. Support** — Contact the Cyber Civil Rights Initiative: 1-844-878-2274`,
+
+  phishing: `You may have clicked a phishing link. Act fast:
+
+**1. Disconnect internet** — Turn off WiFi/data immediately if malware may have downloaded.
+**2. Change passwords** — Change the password for any accounts you entered credentials for.
+**3. Enable 2FA** — On all affected accounts.
+**4. Check bank statements** — If financial info was entered, call your bank.
+**5. Run antivirus** — Scan immediately with Malwarebytes (free version works).
+**6. Watch for follow-up** — Scammers often follow up with calls claiming to be support.
+**7. Enable fraud alerts** — Contact your bank to monitor for suspicious activity.`,
+
+  default: `I'm your Bodyguard AI Co-Pilot, available 24/7 for cyber emergencies.
+
+I can help you with:
+• **Account hacking** — Immediate recovery steps
+• **Blackmail/extortion** — How to respond safely  
+• **Phishing attacks** — What to do if you clicked
+• **Cyber harassment** — Reporting and protection
+• **Identity theft** — Recovery roadmap
+• **Scam prevention** — How to stay safe
+
+Describe your situation and I'll give you step-by-step guidance. Be as specific as you can — I'm here to help.`
+};
+
+function getAIResponse(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('blackmail')||m.includes('extort')||m.includes('threatening')) return AI_RESPONSES.blackmail;
+  if (m.includes('hack')||m.includes('compromised')||m.includes('broke into')||m.includes('stolen account')) return AI_RESPONSES.hacked;
+  if (m.includes('harass')||m.includes('bully')||m.includes('stalking')||m.includes('threatening messages')) return AI_RESPONSES.harassment;
+  if (m.includes('phish')||m.includes('clicked a link')||m.includes('clicked on')||m.includes('entered my password')) return AI_RESPONSES.phishing;
+  return AI_RESPONSES.default;
+}
+
+function AICoPilot({ user, showToast }) {
+  const [messages, setMessages] = useState([{ role:'ai', text:AI_RESPONSES.default }]);
+  const [input, setInput] = useState('');
+  const [typing, setTyping] = useState(false);
+  const chatRef = useRef();
+
+  useEffect(()=>{ if(chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, [messages, typing]);
+
+  const send = async (msg) => {
+    const m = msg || input.trim();
+    if (!m) return;
+    setInput('');
+    setMessages(prev=>[...prev,{role:'user',text:m}]);
+    setTyping(true);
+    await new Promise(r=>setTimeout(r,1000+Math.random()*1000));
+    const resp = getAIResponse(m);
+    setTyping(false);
+    setMessages(prev=>[...prev,{role:'ai',text:resp}]);
+    DB.addActivity(user.uid, { type:'copilot', label:`AI Co-Pilot session`, detail:`Query: "${m.slice(0,50)}..."` });
+  };
+
+  const QUICK = ['I think I was hacked','Someone is blackmailing me','I clicked a phishing link','I\'m being harassed online'];
+
+  const formatMsg = (text) => text.split('\n').map((line,i)=>{
+    const bold = line.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+    return <div key={i} dangerouslySetInnerHTML={{__html:bold}} style={{marginBottom:line?'4px':'8px'}}/>;
+  });
+
+  return (
+    <div className="tool-page">
+      <div className="tool-hero">
+        <div style={{maxWidth:'700px',margin:'0 auto'}}>
+          <div style={{fontSize:'0.8rem',color:'var(--green)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:'0.5rem'}}>Pillar 4</div>
+          <h1 style={{fontSize:'2rem',fontWeight:800,marginBottom:'0.5rem'}}>🤖 AI Cyber Co-Pilot</h1>
+          <p style={{color:'var(--text2)'}}>24/7 AI first responder for active cyber emergencies. Get step-by-step guidance instantly.</p>
+        </div>
+      </div>
+      <div className="tool-container">
+        <div style={{maxWidth:'700px',margin:'0 auto'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'1rem'}}>
+            <div style={{width:8,height:8,borderRadius:'50%',background:'var(--green)',animation:'ping 1.5s infinite'}}/>
+            <span style={{fontSize:'0.8rem',color:'var(--green)',fontWeight:600}}>AI Co-Pilot online</span>
+            <span style={{fontSize:'0.8rem',color:'var(--text3)'}}>· Powered by Gemini NLP</span>
+          </div>
+          <div className="quick-btns">
+            {QUICK.map(q=><button key={q} className="quick-btn" onClick={()=>send(q)}>{q}</button>)}
+          </div>
+          <div className="chat-window" ref={chatRef}>
+            {messages.map((m,i)=>(
+              <div key={i} className={`msg msg-${m.role}`}>
+                {m.role==='ai' && <div className="ai-label">🛡️ Bodyguard AI</div>}
+                <div>{formatMsg(m.text)}</div>
+              </div>
+            ))}
+            {typing && (
+              <div className="msg msg-ai">
+                <div className="ai-label">🛡️ Bodyguard AI</div>
+                <div className="typing-dots">
+                  <div className="typing-dot"/><div className="typing-dot"/><div className="typing-dot"/>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="chat-input-row">
+            <input className="input" placeholder="Describe your situation..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()}/>
+            <button className="btn btn-primary" onClick={()=>send()} disabled={!input.trim()||typing} style={{flexShrink:0}}>Send →</button>
+          </div>
+          <div style={{fontSize:'0.75rem',color:'var(--text3)',marginTop:'0.5rem',textAlign:'center'}}>
+            For life-threatening emergencies, always contact local law enforcement (911/112).
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────
+function App() {
+  const [page, setPage] = useState('home');
+  const [user, setUser] = useState(()=>DB.getSession());
+  const [toast, setToast] = useState({msg:'',type:'info'});
+
+  const showToast = (msg, type='info') => {
+    setToast({msg,type});
+    setTimeout(()=>setToast({msg:'',type:'info'}), 3500);
+  };
+
+  const logout = () => {
+    DB.clearSession(); setUser(null); setPage('home');
+    showToast('Signed out successfully.', 'info');
+  };
+
+  const go = (p) => {
+    if (['url','phishing','audit','copilot','dashboard'].includes(p) && !user) { setPage('login'); return; }
+    setPage(p);
+    window.scrollTo(0,0);
+  };
+
+  const pages = { home:Home, login:Login, signup:Signup, dashboard:Dashboard, url:URLScanner, phishing:PhishingAnalyzer, audit:RiskAudit, copilot:AICoPilot };
+  const PageComp = pages[page] || Home;
+
+  const pageProps = { setPage:go, user, logout, showToast, setUser:(u)=>{setUser(u);} };
+
+  return (
+    <>
+      <Particles/>
+      <div className="scan-line"/>
+      <Navbar page={page} setPage={go} user={user} logout={logout}/>
+      <main style={{position:'relative',zIndex:2}}>
+        <PageComp {...pageProps}/>
+      </main>
+      <Toast msg={toast.msg} type={toast.type}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
