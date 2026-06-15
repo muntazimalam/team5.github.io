@@ -981,7 +981,7 @@ function URLScanner({ user, showToast }) {
           {result && !scanning && (
             <div className={`result-card result-${result.risk}`}>
               <div style={{display:'flex',alignItems:'center',gap:'1rem',marginBottom:'1.25rem'}}>
-                <div style={{fontSize:'2.5rem'}}>{result.risk==='danger'?'🚨':result.risk==='warning'?'⚠️':'✅'}</div>
+                <div style={{fontSize:'2.5rem'}}>{result.risk==='danger'?'🚨':result.risk==='warning!'?'⚠️':'✅'}</div>
                 <div>
                   <div style={{fontSize:'1.25rem',fontWeight:800,color:riskColor(result.risk)}}>{riskLabel(result.risk)}</div>
                   <div style={{fontSize:'0.85rem',color:'var(--text2)'}}>Risk score: {result.score}/100</div>
